@@ -16,9 +16,15 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        
+
+
     }
 }
 
 rootProject.name = "Music Player"
 include(":app")
- 
+include(":lib:extension")
+include(":lib:icon_pack")
+include(":lib:mediaplayer")
+include(":lib:utils")
