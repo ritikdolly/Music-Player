@@ -1,6 +1,7 @@
 package com.example.musicplayer
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -10,54 +11,17 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.musicplayer.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var toggle: ActionBarDrawerToggle
+    private lateinit var musicAdapter: MusicAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(R.style.Theme_MusicPlayer)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-          setSupportActionBar(binding.materialToolbar)
-
-        // Initialize drawer toggle
-        toggle = ActionBarDrawerToggle(this, binding.drawerLayout, R.string.open, R.string.close)
-        binding.drawerLayout.addDrawerListener(toggle)
-        toggle.syncState()
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        // Disable drawer swipe
-        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
-
-        // Open drawer only when menu button is clicked
-        binding.materialToolbar.setNavigationOnClickListener {
-            binding.drawerLayout.openDrawer(binding.navigationView)
-        }
-
-
-        // Set up navigation view item selection listener
-//        binding.navigationView.setNavigationItemSelectedListener { menuItem ->
-//            when (menuItem.itemId) {
-//                R.id.nav_home -> {
-//                    Toast.makeText(this, "Home clicked", Toast.LENGTH_SHORT).show()
-//                    // Handle navigation to home
-//                }
-//                R.id.nav_settings -> {
-//                    Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
-//                    // Handle navigation to settings
-//                }
-//                R.id.nav_logout -> {
-//                    Toast.makeText(this, "Logout clicked", Toast.LENGTH_SHORT).show()
-//                    // Handle logout
-//                }
-//            }
-//            binding.drawerLayout.closeDrawers() // Close drawer after selection
-//            true
-//        }
+        initializeLayout()
 
         // Set up button listeners for player buttons
         binding.shuffleBtn.setOnClickListener {
@@ -77,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Request storage permission at runtime
-        requestRuntimePermission()
+
     }
 
     private fun requestRuntimePermission() {
@@ -94,7 +58,11 @@ class MainActivity : AppCompatActivity() {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED
             ) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 13)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    13
+                )
             }
         }
     }
@@ -120,5 +88,42 @@ class MainActivity : AppCompatActivity() {
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun initializeLayout() {
+
+        setTheme(R.style.Theme_MusicPlayer)
+        requestRuntimePermission()
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.materialToolbar)
+
+        // Initialize drawer toggle
+        toggle = ActionBarDrawerToggle(this, binding.drawerLayout, R.string.open, R.string.close)
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+        // Disable drawer swipe
+        binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+
+        // Open drawer only when menu button is clicked
+        binding.materialToolbar.setNavigationOnClickListener {
+            binding.drawerLayout.openDrawer(binding.navigationView)
+
+            val musicList = arrayListOf(
+                MusicAdapter.MusicItem("Song 1", "Album 1", "3:15", R.mipmap.music_player_icon),
+                MusicAdapter.MusicItem("Song 2", "Album 2", "4:22", R.mipmap.music_player_icon),
+                MusicAdapter.MusicItem("Song 3", "Album 3", "2:45", R.mipmap.music_player_icon)
+            )
+            binding.musicRV.setHasFixedSize(true)
+            binding.musicRV.setItemViewCacheSize(13)
+            binding.musicRV.layoutManager = LinearLayoutManager(this@MainActivity)
+            musicAdapter = MusicAdapter(this@MainActivity, musicList)
+            binding.musicRV.adapter = musicAdapter
+            binding.totalSong.text = "Total Song: ${musicAdapter.itemCount}"
+        }
     }
 }
